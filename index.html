@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Orçamentos - Império Muzuri</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .font-cinzel { font-family: 'Cinzel', serif; }
+        .bg-muzuri { background-color: #8B0000; } /* Vermelho escuro baseado na logo */
+        .text-muzuri { color: #8B0000; }
+        .bg-creme { background-color: #FDFBF7; } /* Creme baseado no crânio da logo */
+        
+        /* A4 aspect ratio for preview */
+        #pdf-preview {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #pdf-preview, #pdf-preview * { visibility: visible; }
+            #pdf-preview {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- PAINEL DE CONTROLE (Oculto no PDF) -->
+        <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-md border-t-4 border-red-800 h-fit no-print">
+            <h2 class="text-2xl font-cinzel text-muzuri mb-6">Império Muzuri<br><span class="text-sm font-sans text-gray-500">Painel do Orçamento</span></h2>
+            
+            <form id="form-orcamento" class="space-y-4">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Logo da Empresa</label>
+                    <input type="file" id="logo-input" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-800 hover:file:bg-red-100">
+                </div>
+
+                <hr class="my-4">
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nome do Cliente</label>
+                    <input type="text" id="cliente" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" placeholder="Ex: João Silva" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">WhatsApp do Cliente</label>
+                    <input type="text" id="whatsapp" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" placeholder="(11) 99999-9999">
+                </div>
+
+                <hr class="my-4">
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nome da Ferramenta/Produto</label>
+                    <input type="text" id="produto" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" placeholder="Ex: Guia de Proteção / Bengala Personalizada">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Imagem de Referência</label>
+                    <input type="file" id="imagem-produto" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Materiais Utilizados (sem valores)</label>
+                    <textarea id="materiais" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" placeholder="Ex: Miçangas de vidro, pingentes de metal, fio de náilon..."></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Valor Final (R$)</label>
+                    <input type="text" id="valor" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-lg font-bold text-green-700 focus:ring-red-500 focus:border-red-500" placeholder="250,00">
+                </div>
+
+                <button type="button" onclick="gerarPDF()" class="w-full bg-muzuri text-white font-bold py-3 px-4 rounded hover:bg-red-900 transition-colors mt-6 shadow-lg">
+                    BAIXAR PDF
+                </button>
+            </form>
+        </div>
+
+        <!-- PRÉ-VISUALIZAÇÃO DO PDF -->
+        <div class="lg:col-span-2 overflow-auto bg-gray-300 p-4 rounded-lg">
+            <div id="pdf-preview" class="p-10 relative flex flex-col justify-between">
+                
+                <!-- Cabeçalho -->
+                <div class="border-b-4 border-red-800 pb-6 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <!-- Espaço para a logo -->
+                        <div id="logo-preview-container" class="w-24 h-24 rounded-full overflow-hidden border-2 border-red-800 hidden flex-shrink-0">
+                            <img id="logo-preview" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h1 class="text-4xl font-cinzel text-muzuri font-bold tracking-wider">IMPÉRIO MUZURI</h1>
+                            <p class="text-gray-600 font-medium">Ferramentas Espirituais Personalizadas</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500 font-bold">ORÇAMENTO</p>
+                        <p class="text-xs text-gray-400" id="data-atual"></p>
+                    </div>
+                </div>
+
+                <!-- Corpo -->
+                <div class="mt-8 flex-grow">
+                    <!-- Dados do Cliente -->
+                    <div class="bg-creme p-4 rounded-lg border border-gray-200 mb-8">
+                        <h3 class="text-sm font-bold text-muzuri mb-2 uppercase tracking-wide">Dados do Cliente</h3>
+                        <p class="text-lg"><span class="font-semibold text-gray-800" id="out-cliente">Nome do Cliente</span></p>
+                        <p class="text-gray-600"><span class="font-medium">WhatsApp:</span> <span id="out-whatsapp">---</span></p>
+                    </div>
+
+                    <!-- Detalhes do Produto -->
+                    <div class="mb-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2" id="out-produto">Nome da Ferramenta</h2>
+                        
+                        <div class="flex gap-6">
+                            <div class="w-1/3 flex-shrink-0">
+                                <div class="bg-gray-100 rounded-lg h-64 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+                                    <img id="img-produto-preview" class="hidden w-full h-full object-cover">
+                                    <span id="img-placeholder" class="text-gray-400 text-sm text-center px-4">Imagem de Referência</span>
+                                </div>
+                            </div>
+                            
+                            <div class="w-2/3">
+                                <h4 class="font-bold text-gray-700 mb-2">Materiais Empregados:</h4>
+                                <p class="text-gray-600 whitespace-pre-wrap leading-relaxed" id="out-materiais">Nenhum material listado ainda.</p>
+                                
+                                <div class="mt-10 bg-red-50 border-l-4 border-red-800 p-4 rounded-r-lg">
+                                    <p class="text-sm text-gray-500 uppercase font-bold">Valor Final do Projeto</p>
+                                    <p class="text-3xl font-bold text-muzuri">R$ <span id="out-valor">0,00</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rodapé -->
+                <div class="border-t-2 border-gray-200 pt-4 mt-8 text-center text-sm text-gray-600">
+                    <p class="font-bold text-gray-800">Termos & Condições</p>
+                    <p>Produção artesanal. O prazo de confecção é de <span class="font-bold text-muzuri">15 dias em média</span>, podendo variar conforme a complexidade.</p>
+                    <p>O envio é feito após a finalização da peça. <span class="font-bold">O valor do frete é cobrado à parte.</span></p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data atual automática
+        const hoje = new Date();
+        document.getElementById('data-atual').innerText = hoje.toLocaleDateString('pt-BR');
+
+        // Função para espelhar os dados digitados na pré-visualização em tempo real
+        const inputs = ['cliente', 'whatsapp', 'produto', 'materiais', 'valor'];
+        inputs.forEach(id => {
+            document.getElementById(id).addEventListener('input', function(e) {
+                let val = e.target.value;
+                document.getElementById('out-' + id).innerText = val || (id === 'materiais' ? 'Nenhum material listado ainda.' : '---');
+            });
+        });
+
+        // Carregar Imagem da Logo
+        document.getElementById('logo-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('logo-preview').src = event.target.result;
+                    document.getElementById('logo-preview-container').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Carregar Imagem do Produto/Referência
+        document.getElementById('imagem-produto').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('img-produto-preview').src = event.target.result;
+                    document.getElementById('img-produto-preview').classList.remove('hidden');
+                    document.getElementById('img-placeholder').classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Gerar o arquivo PDF
+        function gerarPDF() {
+            const element = document.getElementById('pdf-preview');
+            const clienteNome = document.getElementById('cliente').value || 'Cliente';
+            
+            const opt = {
+                margin:       0,
+                filename:     `Orcamento-Muzuri-${clienteNome.replace(/\s+/g, '-')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
