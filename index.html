@@ -15,7 +15,7 @@
         .text-muzuri { color: #8B0000; }
         .bg-creme { background-color: #FDFBF7; }
         
-        /* Folha com largura exata em píxeis para evitar cortes laterais no PDF */
+        /* Folha base do PDF */
         #pdf-preview {
             width: 794px;
             min-height: 1123px;
@@ -23,6 +23,12 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             box-sizing: border-box;
             margin: 0 auto;
+        }
+
+        /* Impede que o PDF corte uma peça no meio na hora de quebrar a página */
+        .avoid-break {
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
 
         @media print {
@@ -49,50 +55,63 @@
         
         <!-- PAINEL DE DADOS -->
         <div id="section-form" class="w-full lg:w-1/3 xl:w-1/4 bg-white lg:shadow-xl h-full lg:overflow-y-auto p-6 block">
-            <h2 class="hidden lg:block text-2xl font-cinzel text-muzuri mb-6">Império Muzuri<br><span class="text-sm font-sans text-gray-500">Painel do Orçamento</span></h2>
+            <h2 class="hidden lg:block text-2xl font-cinzel text-muzuri mb-6">Império Muzuri<br><span class="text-sm font-sans text-gray-500">Painel de Criação</span></h2>
             
             <form id="form-orcamento" class="space-y-5">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Logo da Empresa</label>
-                    <input type="file" id="logo-input" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-800 hover:file:bg-red-100">
+                <!-- DADOS GERAIS -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-4">
+                    <h3 class="font-bold text-gray-800 text-sm uppercase tracking-wide border-b pb-2">Informações Gerais</h3>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Logo da Empresa</label>
+                        <input type="file" id="logo-input" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-800 hover:file:bg-red-100">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nome do Cliente</label>
+                        <input type="text" id="cliente" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" placeholder="Ex: João Silva">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">WhatsApp do Cliente</label>
+                        <input type="tel" id="whatsapp" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" placeholder="(11) 99999-9999">
+                    </div>
                 </div>
 
-                <hr class="border-gray-200">
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Nome do Cliente</label>
-                    <input type="text" id="cliente" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-3 focus:ring-red-500 focus:border-red-500 text-base" placeholder="Ex: João Silva" required>
+                <!-- LISTA DE PEÇAS (Dinâmico) -->
+                <div id="produtos-form-container" class="space-y-4">
+                    <!-- PEÇA 1 -->
+                    <div class="produto-item border-2 border-red-100 p-4 rounded-lg bg-white relative shadow-sm" id="form-item-1">
+                        <h3 class="font-bold text-muzuri mb-3 flex justify-between items-center border-b pb-2">
+                            <span>Peça #1</span>
+                        </h3>
+                        
+                        <div class="space-y-3 mt-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Ferramenta / Produto</label>
+                                <input type="text" data-id="1" data-field="produto" class="sync-text mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" placeholder="Ex: Guia de Proteção">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Imagem de Referência</label>
+                                <input type="file" data-id="1" accept="image/*" class="sync-image mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Materiais (Sem valores)</label>
+                                <textarea data-id="1" data-field="materiais" rows="3" class="sync-text mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" placeholder="Ex: Miçangas, pingentes..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Valor desta peça (R$)</label>
+                                <input type="text" data-id="1" data-field="valor" class="sync-text input-valor mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-lg font-bold text-green-700 focus:ring-red-500 focus:border-red-500" placeholder="0,00">
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">WhatsApp do Cliente</label>
-                    <input type="tel" id="whatsapp" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-3 focus:ring-red-500 focus:border-red-500 text-base" placeholder="(11) 99999-9999">
-                </div>
-
-                <hr class="border-gray-200">
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Ferramenta / Produto</label>
-                    <input type="text" id="produto" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-3 focus:ring-red-500 focus:border-red-500 text-base" placeholder="Ex: Guia de Proteção">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Imagem de Referência</label>
-                    <input type="file" id="imagem-produto" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Materiais Utilizados (sem valores)</label>
-                    <textarea id="materiais" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-3 focus:ring-red-500 focus:border-red-500 text-base" placeholder="Ex: Miçangas, pingentes, fio..."></textarea>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Valor Final (R$)</label>
-                    <input type="text" id="valor" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-3 text-xl font-bold text-green-700 focus:ring-red-500 focus:border-red-500" placeholder="250,00">
-                </div>
+                <!-- Botão Adicionar Peça -->
+                <button type="button" onclick="adicionarPeca()" class="w-full bg-gray-100 text-gray-700 border-2 border-dashed border-gray-400 font-bold py-3 rounded-lg hover:bg-gray-200 transition-colors">
+                    + Adicionar Outra Peça
+                </button>
 
                 <button id="btn-gerar-desktop" type="button" onclick="gerarPDF()" class="hidden lg:block w-full bg-muzuri text-white font-bold py-4 px-4 rounded-lg hover:bg-red-900 transition-colors mt-8 shadow-lg text-lg disabled:bg-gray-400">
-                    BAIXAR PDF
+                    BAIXAR PDF (Total: R$ <span id="btn-total-desktop">0,00</span>)
                 </button>
             </form>
         </div>
@@ -101,9 +120,9 @@
         <div id="section-preview" class="w-full lg:w-2/3 xl:w-3/4 bg-gray-200 h-full lg:overflow-y-auto p-4 lg:p-10 hidden lg:block">
             <div class="w-full overflow-x-auto pb-4 flex lg:justify-center">
                 
-                <div id="pdf-preview" class="p-10 relative flex flex-col justify-between shrink-0 bg-white">
+                <div id="pdf-preview" class="p-10 relative flex flex-col shrink-0 bg-white">
                     <!-- Cabeçalho -->
-                    <div class="border-b-4 border-red-800 pb-6 flex items-center justify-between">
+                    <div class="border-b-4 border-red-800 pb-6 flex items-center justify-between mb-8 avoid-break">
                         <div class="flex items-center gap-4">
                             <div id="logo-preview-container" style="width: 96px; height: 96px;" class="rounded-full overflow-hidden border-2 border-red-800 hidden flex-shrink-0 bg-white">
                                 <img id="logo-preview" class="w-full h-full object-cover">
@@ -119,37 +138,43 @@
                         </div>
                     </div>
 
-                    <!-- Corpo -->
-                    <div class="mt-8 flex-grow">
-                        <div class="bg-creme p-4 rounded-lg border border-gray-200 mb-8">
-                            <h3 class="text-sm font-bold text-muzuri mb-2 uppercase tracking-wide">Dados do Cliente</h3>
-                            <p class="text-lg"><span class="font-semibold text-gray-800" id="out-cliente">Nome do Cliente</span></p>
-                            <p class="text-gray-600"><span class="font-medium">WhatsApp:</span> <span id="out-whatsapp">---</span></p>
-                        </div>
+                    <!-- Dados do Cliente -->
+                    <div class="bg-creme p-4 rounded-lg border border-gray-200 mb-8 avoid-break">
+                        <h3 class="text-sm font-bold text-muzuri mb-2 uppercase tracking-wide">Dados do Cliente</h3>
+                        <p class="text-lg"><span class="font-semibold text-gray-800" id="out-cliente">Nome do Cliente</span></p>
+                        <p class="text-gray-600"><span class="font-medium">WhatsApp:</span> <span id="out-whatsapp">---</span></p>
+                    </div>
 
-                        <div class="mb-8">
-                            <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2" id="out-produto">Nome da Ferramenta</h2>
+                    <!-- CONTAINER DAS PEÇAS -->
+                    <div id="produtos-preview-container" class="flex-grow">
+                        <!-- PREVIEW PEÇA 1 -->
+                        <div class="mb-10 avoid-break" id="preview-item-1">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2" id="out-produto-1">Nome da Ferramenta</h2>
                             <div class="flex gap-6">
-                                
-                                <div id="img-produto-container" style="width: 240px; height: 240px; background-size: contain; background-position: center; background-repeat: no-repeat;" class="flex-shrink-0 bg-white rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center shadow-sm">
-                                    <span id="img-placeholder" class="text-gray-400 text-sm text-center px-4">Imagem de Referência</span>
+                                <div id="img-container-1" style="width: 220px; height: 220px; background-size: contain; background-position: center; background-repeat: no-repeat;" class="flex-shrink-0 bg-white rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center shadow-sm">
+                                    <span id="img-placeholder-1" class="text-gray-400 text-sm text-center px-4">Imagem de Referência</span>
                                 </div>
-                                
-                                <div class="flex-grow">
-                                    <h4 class="font-bold text-gray-700 mb-2">Materiais Empregados:</h4>
-                                    <p class="text-gray-600 whitespace-pre-wrap leading-relaxed" id="out-materiais">Nenhum material listado ainda.</p>
-                                    
-                                    <div class="mt-10 bg-red-50 border-l-4 border-red-800 p-4 rounded-r-lg">
-                                        <p class="text-sm text-gray-500 uppercase font-bold">Valor Final do Projeto</p>
-                                        <p class="text-3xl font-bold text-muzuri">R$ <span id="out-valor">0,00</span></p>
+                                <div class="flex-grow flex flex-col justify-between">
+                                    <div>
+                                        <h4 class="font-bold text-gray-700 mb-2">Materiais Empregados:</h4>
+                                        <p class="text-gray-600 whitespace-pre-wrap leading-relaxed text-sm" id="out-materiais-1">Nenhum material listado ainda.</p>
+                                    </div>
+                                    <div class="mt-4 bg-gray-50 border-l-4 border-gray-400 p-3 rounded-r-lg inline-block w-fit">
+                                        <p class="text-sm text-gray-500 font-bold">Valor da Peça: <span class="text-lg text-gray-800 ml-2">R$ <span id="out-valor-1">0,00</span></span></p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- TOTAL GERAL -->
+                    <div class="mt-8 bg-red-50 border-2 border-red-800 p-6 rounded-lg text-center avoid-break">
+                        <p class="text-sm text-gray-500 uppercase font-bold tracking-widest">Valor Total do Orçamento</p>
+                        <p class="text-4xl font-bold text-muzuri mt-2">R$ <span id="out-total-geral">0,00</span></p>
+                    </div>
+
                     <!-- Rodapé -->
-                    <div class="border-t-2 border-gray-200 pt-4 mt-8 text-center text-sm text-gray-600">
+                    <div class="border-t-2 border-gray-200 pt-4 mt-8 text-center text-sm text-gray-600 avoid-break">
                         <p class="font-bold text-gray-800">Termos & Condições</p>
                         <p>Produção artesanal. O prazo de confecção é de <span class="font-bold text-muzuri">15 dias em média</span>, podendo variar conforme a complexidade.</p>
                         <p>O envio é feito após a finalização da peça. <span class="font-bold">O valor do frete é cobrado à parte.</span></p>
@@ -162,12 +187,14 @@
 
     <!-- BOTÃO FIXO MOBILE -->
     <div class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.1)] lg:hidden z-40 no-print">
-        <button id="btn-gerar-mobile" type="button" onclick="gerarPDF()" class="w-full bg-muzuri text-white font-bold py-4 rounded-lg hover:bg-red-900 transition-colors text-lg shadow-lg disabled:bg-gray-400">
-            BAIXAR PDF
+        <button id="btn-gerar-mobile" type="button" onclick="gerarPDF()" class="w-full bg-muzuri text-white font-bold py-4 rounded-lg hover:bg-red-900 transition-colors text-lg shadow-lg disabled:bg-gray-400 flex flex-col items-center leading-tight">
+            <span>BAIXAR PDF</span>
+            <span class="text-xs font-normal opacity-80">Total: R$ <span id="btn-total-mobile">0,00</span></span>
         </button>
     </div>
 
     <script>
+        // Gestão de Abas Mobile
         function switchTab(tab) {
             const formSection = document.getElementById('section-form');
             const previewSection = document.getElementById('section-preview');
@@ -193,14 +220,128 @@
 
         document.getElementById('data-atual').innerText = new Date().toLocaleDateString('pt-PT');
 
-        const inputs = ['cliente', 'whatsapp', 'produto', 'materiais', 'valor'];
-        inputs.forEach(id => {
+        // Dados globais (Cliente e Logo)
+        ['cliente', 'whatsapp'].forEach(id => {
             document.getElementById(id).addEventListener('input', function(e) {
-                let val = e.target.value;
-                document.getElementById('out-' + id).innerText = val || (id === 'materiais' ? 'Nenhum material listado ainda.' : '---');
+                document.getElementById('out-' + id).innerText = e.target.value || '---';
             });
         });
 
+        // Calculadora de Total
+        function calcularTotal() {
+            let total = 0;
+            document.querySelectorAll('.input-valor').forEach(input => {
+                // Limpa o texto para transformar em número de verdade (suporta vírgula e ponto)
+                let val = input.value.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '');
+                if (val) total += parseFloat(val);
+            });
+            
+            const totalFormatado = total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('out-total-geral').innerText = totalFormatado;
+            document.getElementById('btn-total-desktop').innerText = totalFormatado;
+            document.getElementById('btn-total-mobile').innerText = totalFormatado;
+        }
+
+        // Sistema de Múltiplos Produtos (Adicionar, Remover e Sincronizar)
+        let itemCount = 1;
+
+        // Listener Global para o Container de Produtos (Detecta mudanças nos textos e valores)
+        document.getElementById('produtos-form-container').addEventListener('input', function(e) {
+            if(e.target.classList.contains('sync-text')) {
+                const id = e.target.dataset.id;
+                const field = e.target.dataset.field;
+                const val = e.target.value;
+                const out = document.getElementById(`out-${field}-${id}`);
+                
+                if (field === 'valor') {
+                    out.innerText = val ? val : '0,00';
+                    calcularTotal();
+                } else if (field === 'materiais') {
+                    out.innerText = val || 'Nenhum material listado ainda.';
+                } else {
+                    out.innerText = val || 'Nome da Ferramenta';
+                }
+            }
+        });
+
+        // Listener Global para Imagens dos Produtos
+        document.getElementById('produtos-form-container').addEventListener('change', function(e) {
+            if(e.target.classList.contains('sync-image')) {
+                const id = e.target.dataset.id;
+                const file = e.target.files[0];
+                if (file) {
+                    redimensionarImagem(file, 800, function(resizedImage) {
+                        const container = document.getElementById(`img-container-${id}`);
+                        container.style.backgroundImage = `url(${resizedImage})`;
+                        document.getElementById(`img-placeholder-${id}`).classList.add('hidden');
+                    });
+                }
+            }
+        });
+
+        function adicionarPeca() {
+            itemCount++;
+            const id = itemCount;
+            
+            // HTML do Formulário
+            const formHtml = `
+                <div class="produto-item border-2 border-red-100 p-4 rounded-lg bg-white relative shadow-sm mt-4" id="form-item-${id}">
+                    <h3 class="font-bold text-muzuri mb-3 flex justify-between items-center border-b pb-2">
+                        <span>Peça #${id}</span>
+                        <button type="button" onclick="removerPeca(${id})" class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200">Remover</button>
+                    </h3>
+                    <div class="space-y-3 mt-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Ferramenta / Produto</label>
+                            <input type="text" data-id="${id}" data-field="produto" class="sync-text mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" placeholder="Ex: Guia de Proteção">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Imagem de Referência</label>
+                            <input type="file" data-id="${id}" accept="image/*" class="sync-image mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Materiais</label>
+                            <textarea data-id="${id}" data-field="materiais" rows="3" class="sync-text mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" placeholder="Ex: Miçangas, pingentes..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Valor desta peça (R$)</label>
+                            <input type="text" data-id="${id}" data-field="valor" class="sync-text input-valor mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2 text-lg font-bold text-green-700 focus:ring-red-500 focus:border-red-500" placeholder="0,00">
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('produtos-form-container').insertAdjacentHTML('beforeend', formHtml);
+
+            // HTML da Pré-visualização do PDF
+            const previewHtml = `
+                <div class="mb-10 avoid-break" id="preview-item-${id}">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2" id="out-produto-${id}">Nome da Ferramenta</h2>
+                    <div class="flex gap-6">
+                        <div id="img-container-${id}" style="width: 220px; height: 220px; background-size: contain; background-position: center; background-repeat: no-repeat;" class="flex-shrink-0 bg-white rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center shadow-sm">
+                            <span id="img-placeholder-${id}" class="text-gray-400 text-sm text-center px-4">Imagem de Referência</span>
+                        </div>
+                        <div class="flex-grow flex flex-col justify-between">
+                            <div>
+                                <h4 class="font-bold text-gray-700 mb-2">Materiais Empregados:</h4>
+                                <p class="text-gray-600 whitespace-pre-wrap leading-relaxed text-sm" id="out-materiais-${id}">Nenhum material listado ainda.</p>
+                            </div>
+                            <div class="mt-4 bg-gray-50 border-l-4 border-gray-400 p-3 rounded-r-lg inline-block w-fit">
+                                <p class="text-sm text-gray-500 font-bold">Valor da Peça: <span class="text-lg text-gray-800 ml-2">R$ <span id="out-valor-${id}">0,00</span></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('produtos-preview-container').insertAdjacentHTML('beforeend', previewHtml);
+        }
+
+        function removerPeca(id) {
+            document.getElementById(`form-item-${id}`).remove();
+            document.getElementById(`preview-item-${id}`).remove();
+            calcularTotal();
+        }
+
+        // Função do motor de Imagem
         function redimensionarImagem(file, maxSize, callback) {
             const reader = new FileReader();
             reader.onload = function(event) {
@@ -211,15 +352,9 @@
                     let height = img.height;
 
                     if (width > height) {
-                        if (width > maxSize) {
-                            height *= maxSize / width;
-                            width = maxSize;
-                        }
+                        if (width > maxSize) { height *= maxSize / width; width = maxSize; }
                     } else {
-                        if (height > maxSize) {
-                            width *= maxSize / height;
-                            height = maxSize;
-                        }
+                        if (height > maxSize) { width *= maxSize / height; height = maxSize; }
                     }
                     canvas.width = width;
                     canvas.height = height;
@@ -232,6 +367,7 @@
             reader.readAsDataURL(file);
         }
 
+        // Carregar Logo
         document.getElementById('logo-input').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -242,24 +378,15 @@
             }
         });
 
-        document.getElementById('imagem-produto').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                redimensionarImagem(file, 800, function(resizedImage) {
-                    const container = document.getElementById('img-produto-container');
-                    container.style.backgroundImage = `url(${resizedImage})`;
-                    document.getElementById('img-placeholder').classList.add('hidden');
-                });
-            }
-        });
-
+        // Gerar o PDF
         function gerarPDF() {
             const btnMobile = document.getElementById('btn-gerar-mobile');
             const btnDesktop = document.getElementById('btn-gerar-desktop');
-            const textoOriginal = btnMobile.innerText;
+            const textoMobileOriginal = btnMobile.innerHTML;
+            const textoDesktopOriginal = btnDesktop.innerHTML;
             
-            btnMobile.innerText = "GERANDO PDF...";
-            btnDesktop.innerText = "GERANDO PDF...";
+            btnMobile.innerHTML = "GERANDO PDF...";
+            btnDesktop.innerHTML = "GERANDO PDF...";
             btnMobile.disabled = true;
             btnDesktop.disabled = true;
 
@@ -293,8 +420,8 @@
                     previewSection.style.zIndex = '';
                     previewSection.style.pointerEvents = '';
                 }
-                btnMobile.innerText = textoOriginal;
-                btnDesktop.innerText = textoOriginal;
+                btnMobile.innerHTML = textoMobileOriginal;
+                btnDesktop.innerHTML = textoDesktopOriginal;
                 btnMobile.disabled = false;
                 btnDesktop.disabled = false;
             }
@@ -303,7 +430,7 @@
                 .then(() => restaurarEstado())
                 .catch((err) => {
                     console.error("Erro na geração:", err);
-                    alert("Aviso: Houve uma falha ao gerar o PDF. Verifique o tamanho das imagens inseridas.");
+                    alert("Aviso: Houve uma falha ao gerar o PDF.");
                     restaurarEstado();
                 });
         }
